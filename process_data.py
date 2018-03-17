@@ -7,13 +7,12 @@ expect it will carry an inherent data.
 
 import argparse
 import json
-import math
 import os
 
 
 def process_data_file(
         data_file_path, input_token_to_id_map, output_token_to_id_map,
-        output_path):
+        context_size, sequences_per_example, output_path):
     """ Replace text in training data with dictionary indexes. """
 
     with open(data_file_path) as data_file,\
@@ -23,7 +22,17 @@ def process_data_file(
 
             # Replace all input tokens with indexes
             input_sequences = example['input']
-            for sequence in input_sequences:
+            for sequence_index in range(sequences_per_example):
+
+                # If this sequence isn't in the training data, generate on
+                # that is nothing but 0PAD tokens.
+                if sequence_index >= len(input_sequences):
+                    input_sequences.append(
+                        (["0PAD"] * context_size) + ["0MID"] +\
+                        (["0PAD"] * context_size))
+                sequence = input_sequences[sequence_index]
+
+                # Replace tokens with IDs
                 for token_index, token in enumerate(sequence):
                     token_id = "UNK"
                     if token in input_token_to_id_map:
@@ -34,13 +43,14 @@ def process_data_file(
                 # name will be predicted), as it does not carry information.
                 # This code makes an assumption that the "0MID" token will always
                 # appear at the middle of the sequence.
-                del sequence[math.floor(len(sequence) / 2)]
+                del sequence[context_size]
 
             # Replace output tokens with indexes
             example['output'] = output_token_to_id_map[example['output']]
 
             # Write to the output file (one line at a time)
             output_file.write(json.dumps(example) + "\n")
+
 
 if __name__ == '__main__':
 
@@ -65,6 +75,25 @@ if __name__ == '__main__':
         type=str,
         help="Path to file containing the input vocabulary",
         default=os.path.join("processed", "input_vocabulary.json"),
+        )
+    PARSER.add_argument(
+        '--sequences-per-example',
+        type=int,
+        help=(
+            "The number of sequences that are expected for each example. " +
+            "If an example doesn't have this many sequences, it will be " +
+            "padded with extra sequences consisting of 0PAD tokens."),
+        default=5,
+        )
+    PARSER.add_argument(
+        '--context-size',
+        type=int,
+        help=(
+            "The expected number of tokens on each side of the 0MID token " +
+            "in each sequence.  Used for generating 0PAD sequences when " +
+            "there aren't enough sequences for an example, and for deleting" +
+            "0MID tokens from the input data."),
+        default=3,
         )
     PARSER.add_argument(
         '--output-vocabulary-path',
@@ -94,4 +123,4 @@ if __name__ == '__main__':
     )
     process_data_file(
         ARGS.data_file, INPUT_TOKEN_TO_ID_MAP, OUTPUT_TOKEN_TO_ID_MAP,
-        OUTPUT_PATH)
+        ARGS.context_size, ARGS.sequences_per_example, OUTPUT_PATH)
