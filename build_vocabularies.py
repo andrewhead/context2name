@@ -46,6 +46,11 @@ def build_input_vocabulary(
                     # vocabulary, regardless of how often it occurs.
                     if token == "0PAD":
                         continue
+                    # Also don't count the MID token (which is the placeholder
+                    # for the variable we're trying to predict).  This is not
+                    # actual text and might be removed from the input.
+                    if token == "0MID":
+                        continue
                     if not token in token_counts:
                         token_counts[token] = 0
                     token_counts[token] += 1

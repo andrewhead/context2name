@@ -1,10 +1,13 @@
 """
 Transforms input data to use word IDs instead of text, and outputs the
 transformed data to <output_directory>/<input_basename>_processed.txt.
+Also deletes the "0MID" token from each input sequence, as we don't
+expect it will carry an inherent data.
 """
 
 import argparse
 import json
+import math
 import os
 
 
@@ -26,6 +29,12 @@ def process_data_file(
                     if token in input_token_to_id_map:
                         token_id = input_token_to_id_map[token]
                     sequence[token_index] = token_id
+
+                # Delete the middle token from the list (the placeholder whose
+                # name will be predicted), as it does not carry information.
+                # This code makes an assumption that the "0MID" token will always
+                # appear at the middle of the sequence.
+                del sequence[math.floor(len(sequence) / 2)]
 
             # Replace output tokens with indexes
             example['output'] = output_token_to_id_map[example['output']]
