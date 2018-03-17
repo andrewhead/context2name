@@ -68,8 +68,8 @@ def build_input_vocabulary(
         token_counts, input_vocabulary_size)
 
     # Add special tokens "UNK" (unknown) and "0PAD"
-    token_to_id_dictionary["0PAD"] = len(token_to_id_dictionary)
-    token_to_id_dictionary["UNK"] = len(token_to_id_dictionary)
+    token_to_id_dictionary["0PAD"] = len(token_to_id_dictionary) + 1
+    token_to_id_dictionary["UNK"] = len(token_to_id_dictionary) + 1
 
     # Save the dictionary to file
     output_path = os.path.join(output_directory_path, "input_vocabulary.json")
@@ -104,7 +104,7 @@ def build_output_vocabulary(
         token_counts, output_vocabulary_size)
 
     # Add special token "UNK" (unknown)
-    token_to_id_dictionary["UNK"] = len(token_to_id_dictionary)
+    token_to_id_dictionary["UNK"] = len(token_to_id_dictionary) + 1
 
     # Save the dictionary to file
     output_path = os.path.join(output_directory_path, "output_vocabulary.json")
