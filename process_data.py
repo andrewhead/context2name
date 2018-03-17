@@ -43,9 +43,9 @@ def process_data_file(
 
                 # Replace tokens with IDs
                 for token_index, token in enumerate(sequence):
-                    token_id = "UNK"
-                    if token in input_token_to_id_map:
-                        token_id = input_token_to_id_map[token]
+                    if token not in input_token_to_id_map:
+                        token = "UNK"
+                    token_id = input_token_to_id_map[token]
                     sequence[token_index] = token_id
 
                 # Delete the middle token from the list (the placeholder whose
@@ -55,7 +55,11 @@ def process_data_file(
                 del sequence[context_size]
 
             # Replace output tokens with indexes
-            example['output'] = output_token_to_id_map[example['output']]
+            output_token = example['output']
+            if output_token not in output_token_to_id_map:
+                output_token = "UNK"
+            output_token_id = output_token_to_id_map[output_token]
+            example['output'] = output_token_id
 
             # Write to the output file (one line at a time)
             output_file.write(json.dumps(example) + "\n")
