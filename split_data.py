@@ -25,10 +25,13 @@ def split_data_file(
     # Compute how many examples should be included in the validation set
     validation_count = math.floor(example_count * validation_ratio)
 
-    # Split the indexes into a training and testing set
-    example_indexes = np.arange(0, example_count)
+    # Determine beforehand whether each example should go into the
+    # training or validation set.  We do this by making evenly-spaced values
+    # from 0 to 1 for each example.  If the value for that index is less
+    # than the validation ratio, it belongs in the validation set.
+    example_indexes = np.arange(0, example_count) / example_count
     np.random.shuffle(example_indexes)
-    validation_indexes = example_indexes[:validation_count]
+    is_validation_index = example_indexes < validation_ratio
 
     # Initialize paths to training and validation files
     file_ext = os.path.splitext(data_file_path)[1]
@@ -50,7 +53,7 @@ def split_data_file(
                 desc="Splitting data file, current line")
 
         for example_index, line in enumerate(line_iterator):
-            if example_index in validation_indexes:
+            if is_validation_index[example_index]:
                 validation_file.write(line)
             else:
                 training_file.write(line)
