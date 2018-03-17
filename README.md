@@ -18,7 +18,9 @@ pip install -r requirements.txt
 Pre-process the data:
 
 ```bash
-python build_vocabularies.py raw/training_preprocessed.txt
-python process_data.py raw/training_preprocessed.txt
-python process_data.py raw/evaluation_preprocessed.txt
+python build_vocabularies.py raw/training_preprocessed.txt --show-progress
+python process_data.py raw/training_preprocessed.txt --show-progress
+python process_data.py raw/evaluation_preprocessed.txt --show-progress
 ```
+
+The `--show-progress` flag is optional.

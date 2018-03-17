@@ -7,6 +7,7 @@ Creates two file:
 import argparse
 import json
 import os
+from tqdm import tqdm
 
 
 def _to_word_id_dictionary(token_counts, vocabulary_size):
@@ -31,13 +32,21 @@ def _to_word_id_dictionary(token_counts, vocabulary_size):
 
 def build_input_vocabulary(
         training_file_path, input_vocabulary_size,
-        output_directory_path):
+        output_directory_path, show_progress):
     """ Create input vocabulary dictionary and save to a file. """
 
     # Count up how often each token appears in the inputs
     token_counts = {}
     with open(training_file_path) as training_file:
-        for line in training_file:
+
+        # Initialize iterator for looping over lines in file
+        line_iterator = training_file
+        if show_progress:
+            line_iterator = tqdm(
+                training_file,
+                desc="Building input vocabulary.  Processing line")
+
+        for line in line_iterator:
             example = json.loads(line.strip())
             input_sequences = example['input']
             for input_sequence in input_sequences:
@@ -70,13 +79,21 @@ def build_input_vocabulary(
 
 def build_output_vocabulary(
         training_file_path, output_vocabulary_size,
-        output_directory_path):
+        output_directory_path, show_progress):
     """ Create output vocabulary dictionary and save to a file. """
 
     # Count up how often each token appears in the example output
     token_counts = {}
     with open(training_file_path) as training_file:
-        for line in training_file:
+
+        # Initialize iterator for looping over lines in file
+        line_iterator = training_file
+        if show_progress:
+            line_iterator = tqdm(
+                training_file,
+                desc="Building output vocabulary.  Processing line")
+
+        for line in line_iterator:
             example = json.loads(line.strip())
             token = example['output']
             if not token in token_counts:
@@ -127,6 +144,12 @@ if __name__ == '__main__':
         help="Size of output vocabulary",
         default=60000,
         )
+    PARSER.add_argument(
+        '-p',
+        '--show-progress',
+        action='store_true',
+        help="Whether to show progress building the vocabulary.",
+        )
     ARGS = PARSER.parse_args()
 
     OUTPUT_DIRECTORY_PATH = ARGS.output_directory
@@ -135,8 +158,8 @@ if __name__ == '__main__':
 
     build_input_vocabulary(
         ARGS.training_file, ARGS.input_vocabulary_size,
-        OUTPUT_DIRECTORY_PATH)
+        OUTPUT_DIRECTORY_PATH, ARGS.show_progress)
 
     build_output_vocabulary(
         ARGS.training_file, ARGS.output_vocabulary_size,
-        OUTPUT_DIRECTORY_PATH)
+        OUTPUT_DIRECTORY_PATH, ARGS.show_progress)

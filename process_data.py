@@ -8,16 +8,25 @@ expect it will carry an inherent data.
 import argparse
 import json
 import os
+from tqdm import tqdm
 
 
 def process_data_file(
         data_file_path, input_token_to_id_map, output_token_to_id_map,
-        context_size, sequences_per_example, output_path):
+        context_size, sequences_per_example, output_path, show_progress):
     """ Replace text in training data with dictionary indexes. """
 
     with open(data_file_path) as data_file,\
          open(output_path, 'w') as output_file:
-        for line in data_file:
+
+        # Initialize iterator for looping over lines in file
+        line_iterator = data_file
+        if show_progress:
+            line_iterator = tqdm(
+                data_file,
+                desc="Processing data file, current line")
+
+        for line in line_iterator:
             example = json.loads(line.strip())
 
             # Replace all input tokens with indexes
@@ -101,6 +110,12 @@ if __name__ == '__main__':
         help="Path to file containing the output vocabulary",
         default=os.path.join("processed", "output_vocabulary.json"),
         )
+    PARSER.add_argument(
+        '-p',
+        '--show-progress',
+        action='store_true',
+        help="Whether to show progress building the vocabulary.",
+        )
     ARGS = PARSER.parse_args()
 
     OUTPUT_DIRECTORY_PATH = ARGS.output_directory
@@ -123,4 +138,5 @@ if __name__ == '__main__':
     )
     process_data_file(
         ARGS.data_file, INPUT_TOKEN_TO_ID_MAP, OUTPUT_TOKEN_TO_ID_MAP,
-        ARGS.context_size, ARGS.sequences_per_example, OUTPUT_PATH)
+        ARGS.context_size, ARGS.sequences_per_example, OUTPUT_PATH,
+        ARGS.show_progress)
