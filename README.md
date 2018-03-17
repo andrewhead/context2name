@@ -2,7 +2,7 @@
 
 ## Assumptions
 
-Assumes you already have the data files in `data/`.  Ask
+Assumes you already have the raw data files in `raw/`.  Ask
 the repo admin if you want access to them.
 
 ## Getting Started
