@@ -1,8 +1,10 @@
 """
 Transforms input data to use word IDs instead of text, and outputs the
-transformed data to <output_directory>/<input_basename>_processed.txt.
-Also deletes the "0MID" token from each input sequence, as we don't
-expect it will carry an inherent data.
+transformed data to <output_directory>/<input_basename>.csv.
+Output is a CSV, where the first column is the label (output token ID),
+and all other columns are the IDs of the input tokens.
+Deletes the "0MID" token from each input sequence, as we don't
+expect it will carry any useful information.
 """
 
 import argparse
@@ -28,8 +30,16 @@ def process_data_file(
 
         for line in line_iterator:
             example = json.loads(line.strip())
+            csv_data = []  # these are the columns we will output to file
 
-            # Replace all input tokens with indexes
+            # Replace output token with ID
+            output_token = example['output']
+            if output_token not in output_token_to_id_map:
+                output_token = "UNK"
+            output_token_id = output_token_to_id_map[output_token]
+            csv_data.append(output_token_id)
+
+            # Replace all input tokens with IDs
             input_sequences = example['input']
             for sequence_index in range(sequences_per_example):
 
@@ -54,15 +64,11 @@ def process_data_file(
                 # appear at the middle of the sequence.
                 del sequence[context_size]
 
-            # Replace output tokens with indexes
-            output_token = example['output']
-            if output_token not in output_token_to_id_map:
-                output_token = "UNK"
-            output_token_id = output_token_to_id_map[output_token]
-            example['output'] = output_token_id
+                # Add the sequence to this row of the output data
+                csv_data.extend(sequence)
 
             # Write to the output file (one line at a time)
-            output_file.write(json.dumps(example) + "\n")
+            output_file.write(",".join([str(i) for i in csv_data]) + "\n")
 
 
 if __name__ == '__main__':
@@ -135,10 +141,7 @@ if __name__ == '__main__':
     # Make the name for an output file from the input file name.
     OUTPUT_PATH = os.path.join(
         OUTPUT_DIRECTORY_PATH,
-        (
-            os.path.splitext(os.path.basename(ARGS.data_file))[0] +
-            "_processed.txt"
-        )
+        os.path.splitext(os.path.basename(ARGS.data_file))[0] + ".csv"
     )
     process_data_file(
         ARGS.data_file, INPUT_TOKEN_TO_ID_MAP, OUTPUT_TOKEN_TO_ID_MAP,
