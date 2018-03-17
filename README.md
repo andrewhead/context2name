@@ -18,10 +18,20 @@ pip install -r requirements.txt
 Pre-process the data:
 
 ```bash
-python build_vocabularies.py raw/training_preprocessed.txt --show-progress
-python process_data.py raw/training_preprocessed.txt --show-progress
-python split_data.py processed/training_preprocessed.csv --show-progress
+# Create input and output vocabularies.
+python build_vocabularies.py raw/training_processed.txt --show-progress
 
+# Process data into CSVs with token IDs instead of text.
+python process_data.py raw/training_processed.txt --show-progress
+
+# Split the data into training and validation.
+python split_data.py processed/training_processed.csv --show-progress
+
+# Shuffle the training data into random order.  Note: this
+# may only work on OSX.  Try using `shuf` on Unix systems.
+gshuf processed/training.csv -o processed/training_shuffled.csv
+
+# Process evaluation data into compatible format.
 python process_data.py raw/evaluation_preprocessed.txt --show-progress
 ```
 
