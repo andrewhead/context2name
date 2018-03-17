@@ -20,6 +20,8 @@ Pre-process the data:
 ```bash
 python build_vocabularies.py raw/training_preprocessed.txt --show-progress
 python process_data.py raw/training_preprocessed.txt --show-progress
+python split_data.py processed/training_preprocessed.csv --show-progress
+
 python process_data.py raw/evaluation_preprocessed.txt --show-progress
 ```
 
